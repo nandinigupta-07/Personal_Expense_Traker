@@ -13,10 +13,11 @@ function Dashboard() {
   }, []);
 
   const getTransactions = async () => {
-    try {
-      const res = await API.get("/transactions");
 
-      const data = res.data;
+    try {
+
+      const res = await API.get("/transactions");
+      const data = res.data.data;
 
       setTransactions(data);
 
@@ -24,11 +25,13 @@ function Dashboard() {
       let totalExpense = 0;
 
       data.forEach((t) => {
+
         if (t.type === "income") {
           totalIncome += t.amount;
         } else {
           totalExpense += t.amount;
         }
+
       });
 
       setIncome(totalIncome);
@@ -37,100 +40,154 @@ function Dashboard() {
     } catch (error) {
       console.log(error);
     }
+
+  };
+
+  // DELETE WITH CONFIRMATION
+  const deleteTransaction = async (id) => {
+
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this transaction?"
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+
+      await API.delete(`/transactions/${id}`);
+
+      getTransactions();
+
+    } catch (error) {
+      console.log(error);
+    }
+
   };
 
   const balance = income - expense;
 
   return (
+
     <>
       <Navbar />
 
-      <div style={styles.container}>
+      <div className="p-10 bg-gray-100 min-h-screen">
 
-        <h1>Dashboard</h1>
+        <h1 className="text-3xl font-bold mb-6">
+          Dashboard
+        </h1>
 
-        <div style={styles.cardContainer}>
+        {/* Summary Cards */}
 
-          <div style={styles.card}>
-            <h3>Total Income</h3>
-            <p style={{color:"green"}}>₹ {income}</p>
+        <div className="flex gap-6">
+
+          <div className="bg-white p-6 rounded-xl shadow w-60 text-center">
+            <h3 className="text-gray-500">Total Income</h3>
+            <p className="text-2xl font-bold text-green-600">
+              ₹ {income}
+            </p>
           </div>
 
-          <div style={styles.card}>
-            <h3>Total Expense</h3>
-            <p style={{color:"red"}}>₹ {expense}</p>
+          <div className="bg-white p-6 rounded-xl shadow w-60 text-center">
+            <h3 className="text-gray-500">Total Expense</h3>
+            <p className="text-2xl font-bold text-red-600">
+              ₹ {expense}
+            </p>
           </div>
 
-          <div style={styles.card}>
-            <h3>Balance</h3>
-            <p style={{color:"blue"}}>₹ {balance}</p>
+          <div className="bg-white p-6 rounded-xl shadow w-60 text-center">
+            <h3 className="text-gray-500">Balance</h3>
+            <p className="text-2xl font-bold text-blue-600">
+              ₹ {balance}
+            </p>
           </div>
 
         </div>
 
-        <h2 style={{marginTop:"40px"}}>Recent Transactions</h2>
+        {/* Transactions Table */}
 
-        <table style={styles.table}>
+        <h2 className="text-xl font-semibold mt-10">
+          Recent Transactions
+        </h2>
 
-          <thead>
-            <tr>
-              <th>Category</th>
-              <th>Amount</th>
-              <th>Type</th>
-              <th>Date</th>
-            </tr>
-          </thead>
+        <div className="bg-white shadow rounded-lg mt-4 overflow-hidden">
 
-          <tbody>
+          <table className="w-full">
 
-            {transactions.slice(0,5).map((t) => (
-              <tr key={t._id}>
-                <td>{t.category?.name}</td>
-                <td>₹ {t.amount}</td>
-                <td>{t.type}</td>
-                <td>{new Date(t.date).toLocaleDateString()}</td>
+            <thead className="bg-gray-200">
+
+              <tr>
+
+                <th className="p-3 text-left">
+                  Item
+                </th>
+
+                <th className="p-3 text-left">
+                  Amount
+                </th>
+
+                <th className="p-3 text-left">
+                  Type
+                </th>
+
+                <th className="p-3 text-left">
+                  Date
+                </th>
+
+                <th className="p-3 text-left">
+                  Action
+                </th>
+
               </tr>
-            ))}
 
-          </tbody>
+            </thead>
 
-        </table>
+            <tbody>
+
+              {transactions.slice(0,5).map((t) => (
+
+                <tr key={t._id} className="border-t">
+
+                  <td className="p-3">
+                    {t.description}
+                  </td>
+
+                  <td className="p-3">
+                    ₹ {t.amount}
+                  </td>
+
+                  <td className="p-3">
+                    {t.type}
+                  </td>
+
+                  <td className="p-3">
+                    {new Date(t.date).toLocaleDateString()}
+                  </td>
+
+                  <td className="p-3">
+                    <button
+                      onClick={() => deleteTransaction(t._id)}
+                      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+                  </td>
+
+                </tr>
+
+              ))}
+
+            </tbody>
+
+          </table>
+
+        </div>
 
       </div>
+
     </>
   );
+
 }
-
-const styles = {
-
-  container: {
-    padding: "40px",
-    fontFamily: "Arial"
-  },
-
-  cardContainer: {
-    display: "flex",
-    gap: "20px",
-    marginTop: "20px"
-  },
-
-  card: {
-    background: "#f5f5f5",
-    padding: "20px",
-    borderRadius: "10px",
-    width: "200px",
-    textAlign: "center",
-    boxShadow: "0 2px 5px rgba(0,0,0,0.2)"
-  },
-
-  table: {
-    width: "100%",
-    marginTop: "20px",
-    borderCollapse: "collapse"
-  }
-  
-
-};
-
 
 export default Dashboard;

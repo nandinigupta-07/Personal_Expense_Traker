@@ -1,81 +1,116 @@
-import React, { useState } from "react";
-import API from "../services/api";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
-function Login() {
+function Login(){
+
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email,setEmail] = useState("");
+  const [password,setPassword] = useState("");
+  const [error,setError] = useState("");
 
-  const loginUser = async (e) => {
+  const handleLogin = async (e)=>{
+
     e.preventDefault();
 
-    try {
-      const res = await API.post("/auth/login", {
-        email,
-        password,
+    setError("");
+
+    try{
+
+      const res = await fetch("http://localhost:3000/api/auth/login",{
+
+        method:"POST",
+
+        headers:{
+          "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify({
+          email,
+          password
+        })
+
       });
 
-      localStorage.setItem("token", res.data.token);
+      const data = await res.json();
 
-      navigate("/dashboard");
-    } catch (error) {
-      alert("Login Failed");
+      if(res.ok){
+
+        localStorage.setItem("token",data.token);
+
+        navigate("/dashboard");
+
+      }else{
+
+        setError(data.message || "Invalid email or password");
+
+      }
+
+    }catch(err){
+
+      setError("Server error");
+
     }
+
   };
 
-  return (
-    <div style={styles.container}>
-      <form style={styles.form} onSubmit={loginUser}>
-        <h2>Login</h2>
+  return(
 
-        <input
-          style={styles.input}
-          type="email"
-          placeholder="Email"
-          onChange={(e) => setEmail(e.target.value)}
-        />
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
 
-        <input
-          style={styles.input}
-          type="password"
-          placeholder="Password"
-          onChange={(e) => setPassword(e.target.value)}
-        />
+      <div className="bg-white p-8 rounded-xl shadow w-96">
 
-        <button style={styles.button}>Login</button>
-      </form>
+        <h2 className="text-3xl font-bold text-center mb-6">
+          Login
+        </h2>
+
+        {error && (
+          <div className="bg-red-100 text-red-600 p-2 mb-4 rounded">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleLogin} className="space-y-4">
+
+          <input
+            type="email"
+            placeholder="Email"
+            className="w-full border p-3 rounded"
+            onChange={(e)=>setEmail(e.target.value)}
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full border p-3 rounded"
+            onChange={(e)=>setPassword(e.target.value)}
+          />
+
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600"
+          >
+            Login
+          </button>
+
+        </form>
+
+        <p className="text-center mt-4">
+
+          Don't have account?
+
+          <Link to="/register" className="text-blue-500 ml-1">
+            Register
+          </Link>
+
+        </p>
+
+      </div>
+
     </div>
-  );
-}
 
-const styles = {
-  container: {
-    height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "#f4f4f4",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
-    padding: "40px",
-    background: "white",
-    borderRadius: "10px",
-    width: "300px",
-  },
-  input: {
-    padding: "10px",
-  },
-  button: {
-    padding: "10px",
-    background: "#333",
-    color: "white",
-    cursor: "pointer",
-  },
-};
+  )
+
+}
 
 export default Login;
