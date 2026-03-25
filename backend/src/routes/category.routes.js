@@ -1,16 +1,17 @@
 const express = require("express");
-
 const router = express.Router();
 
-const categoryController = require("../controllers/category.controller");
-const authMiddleware = require("../middlewares/auth.middleware");
+const {
+  getCategories,
+  createCategory,
+} = require("../controllers/category.controller");
 
+const auth = require("../middleware/auth"); // ✅ IMPORTANT (token verify)
 
-router.post("/", authMiddleware, categoryController.createCategory);
+// ✅ GET all categories (user wise)
+router.get("/", auth, getCategories);
 
-router.get("/", authMiddleware, categoryController.getCategories);
-
-router.delete("/:id", authMiddleware, categoryController.deleteCategory);
-
+// ✅ CREATE new category
+router.post("/", auth, createCategory);
 
 module.exports = router;

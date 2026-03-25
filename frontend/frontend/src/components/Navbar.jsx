@@ -25,7 +25,9 @@ function Navbar() {
         <Link style={styles.link} to="/add-transaction">
           Add Transaction
         </Link>
-
+        <li>
+          <Link to="/categories">Categories</Link>
+        </li>
         <button style={styles.button} onClick={logout}>
           Logout
         </button>
