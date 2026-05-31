@@ -4,7 +4,7 @@ const Category = require("../models/category.model");
 const getCategories = async (req, res) => {
   try {
     const categories = await Category.find({
-      userId: req.user.id, // ✅ user specific data
+      userId: req.user.id,
     });
 
     res.status(200).json(categories);
@@ -19,27 +19,27 @@ const createCategory = async (req, res) => {
   try {
     const { name, type } = req.body;
 
-    // validation
     if (!name || !type) {
       return res.status(400).json({ message: "Name and type required" });
     }
 
-    // check existing (user-wise)
+    const formattedName = name.trim().toLowerCase();
+
+    // ✅ duplicate check (user-wise + type)
     const existing = await Category.findOne({
-      name: name.toLowerCase(),
+      name: formattedName,
       type,
-      userId: req.user.id, // ✅ IMPORTANT
+      userId: req.user.id,
     });
 
     if (existing) {
       return res.status(200).json({ category: existing });
     }
 
-    // create new category
     const newCategory = new Category({
-      name: name.toLowerCase(),
+      name: formattedName,
       type,
-      userId: req.user.id, // ✅ FIX HERE
+      userId: req.user.id,
     });
 
     await newCategory.save();
@@ -52,7 +52,34 @@ const createCategory = async (req, res) => {
   }
 };
 
+// ✅ DELETE CATEGORY (NEW 🔥)
+const deleteCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // check category exists for that user
+    const category = await Category.findOne({
+      _id: id,
+      userId: req.user.id,
+    });
+
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    // delete
+    await Category.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "Category deleted successfully ✅" });
+
+  } catch (error) {
+    console.error("Delete Category Error:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
 module.exports = {
   getCategories,
   createCategory,
+  deleteCategory, // ✅ export added
 };
