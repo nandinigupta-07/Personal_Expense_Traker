@@ -16,72 +16,70 @@ function Register() {
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    setError("");
-    setSuccess("");
+  setError("");
+  setSuccess("");
 
-    if (!name.trim()) {
-      setError("Name is required");
-      return;
-    }
+  if (!name.trim()) {
+    setError("Name is required");
+    return;
+  }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!emailRegex.test(email)) {
-      setError("Please enter a valid email");
-      return;
-    }
+  if (!emailRegex.test(email)) {
+    setError("Please enter a valid email");
+    return;
+  }
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
-      return;
-    }
+  if (password.length < 6) {
+    setError("Password must be at least 6 characters");
+    return;
+  }
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const res = await fetch(
-        "http://localhost:3000/api/auth/register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            name,
-            email,
-            password
-          })
-        }
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/auth/register`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (res.ok) {
+      setSuccess(
+        data.message || "Account created successfully!"
       );
 
-      const data = await res.json();
+      setName("");
+      setEmail("");
+      setPassword("");
 
-      if (res.ok) {
-        setSuccess(
-          data.message || "Account created successfully!"
-        );
-
-        setName("");
-        setEmail("");
-        setPassword("");
-
-        setTimeout(() => {
-          navigate("/login");
-        }, 1500);
-
-      } else {
-        setError(data.message || "Registration failed");
-      }
-
-    } catch (err) {
-      setError("Server not responding");
-    } finally {
-      setLoading(false);
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
+    } else {
+      setError(data.message || "Registration failed");
     }
-  };
-
+  } catch (err) {
+    console.error(err);
+    setError("Server not responding");
+  } finally {
+    setLoading(false);
+  }
+};
   const handleGoogleSignup = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
