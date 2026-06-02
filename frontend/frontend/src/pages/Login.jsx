@@ -19,27 +19,38 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError("");
-    try {
-      const res = await fetch("http://localhost:3000/api/auth/login", {
+ const handleLogin = async (e) => {
+  e.preventDefault();
+  setError("");
+
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/auth/login`,
+      {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        safeClear(); // ✅ localStorage.clear() ki jagah
-        localStorage.setItem("token", data.token);
-        navigate("/dashboard");
-      } else {
-        setError(data.message || "Invalid email or password");
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
       }
-    } catch (err) {
-      setError("Server error");
+    );
+
+    const data = await res.json();
+
+    if (res.ok) {
+      safeClear();
+      localStorage.setItem("token", data.token);
+      navigate("/dashboard");
+    } else {
+      setError(data.message || "Invalid email or password");
     }
-  };
+  } catch (err) {
+    setError("Server error");
+  }
+};
 
   const handleGoogleLogin = async () => {
     try {
